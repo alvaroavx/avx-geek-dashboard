@@ -1,0 +1,14 @@
+# Dependencias
+node_modules/
+
+# Archivos de configuración local
+config/local.js
+config/local.json
+
+# Archivos de registro
+logs/
+*.log
+
+# Archivos temporales
+*.swp
+.DS_Store

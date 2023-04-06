@@ -1,0 +1,28 @@
+{
+  "name": "avx-geek-dashboard",
+  "version": "1.0.0",
+  "description": "Panel de control de proyectos de OpenGeek para AVX",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alvaroavx/avx-geek-dashboard.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alvaroavx/avx-geek-dashboard/issues"
+  },
+  "homepage": "https://github.com/alvaroavx/avx-geek-dashboard#readme",
+  "dependencies": {
+    "axios": "^1.3.4",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-error-handler": "^1.1.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.1"
+  }
+}
