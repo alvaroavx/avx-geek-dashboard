@@ -1,8 +1,9 @@
 const axios = require('axios');
+const https = require('https');
 
 const sitios = [
     { nombre: 'UNIACC', url: 'https://repositoriobiblioteca.uniacc.cl/' },
-    { nombre: 'Banco Central', url: 'https://repositoriodigital.bcentral.cl/' },
+    { nombre: 'Banco Central', url: 'https://repositoriodigital.bcentral.cl/' }/*,
     { nombre: 'UFT', url: 'https://repositorio.uft.cl/' },
     { nombre: 'UV', url: 'http://repositoriobibliotecas.uv.cl/' },
     { nombre: 'CORFO', url: 'http://repositoriodigital.corfo.cl/' },
@@ -14,19 +15,19 @@ const sitios = [
     { nombre: 'UDLA', url: 'https://repositorio.udla.cl/' },
     { nombre: 'UVM', url: 'http://repositorio.uvm.cl/' },
     { nombre: 'UAC', url: 'http://repositorio.uac.cl/' },
-    { nombre: 'Valle Central', url: 'http://repositorio.vallecentral.cl/' }
+    { nombre: 'Valle Central', url: 'http://repositorio.vallecentral.cl/' }*/
   ];
 
 async function obtenerEstadoDeSitios() {
   const resultados = await Promise.all(sitios.map(async (sitio) => {
       try {
           const tiempoInicio = Date.now();
-          const response = await axios.get(sitio.url);
+          const response = await axios.get(sitio.url, { httpsAgent: new https.Agent({ rejectUnauthorized: false }) });
           const tiempoFin = Date.now();
           const tiempoRespuesta = tiempoFin - tiempoInicio;
           return {
-              nombre: sitio.nombre,
-              url: sitio.url,
+              nombre: `${sitio.nombre}`,
+              url: `${sitio.url}`,
               estado: `OK`,
               tiempoRespuesta: `${tiempoRespuesta} ms`,
               statusText: `${response.status}`,
