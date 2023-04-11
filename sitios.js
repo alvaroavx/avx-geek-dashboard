@@ -18,6 +18,34 @@ const sitios = [
   ];
 
 async function obtenerEstadoDeSitios() {
+  const resultados = await Promise.all(sitios.map(async (sitio) => {
+      try {
+          const tiempoInicio = Date.now();
+          const response = await axios.get(sitio.url);
+          const tiempoFin = Date.now();
+          const tiempoRespuesta = tiempoFin - tiempoInicio;
+          return {
+              nombre: sitio.nombre,
+              url: sitio.url,
+              estado: `OK`,
+              tiempoRespuesta: `${tiempoRespuesta} ms`,
+              statusText: `${response.status}`,
+              server: `${response.headers['server']}`,
+              cookies: `${response.headers['set-cookie']}`
+          };
+      } catch (error) {
+          return {
+              nombre: `${sitio.nombre}`,
+              url: `${sitio.url}`,
+              estado: `NOK`,
+              statusText: `${error}`,
+          };
+      }
+  }));
+  return resultados;
+}
+
+async function obtenerEstadoDeSitiosSecuencial() {
     const resultados = [];
   
     for (const sitio of sitios) {

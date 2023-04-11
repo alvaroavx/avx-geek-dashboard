@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.7/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Barra superior -->
+    <nav class="bg-blue-500 py-2">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <div class="text-xl font-bold text-white">Dashboard</div>
+            <div class="flex items-center">
+                <form class="mr-4">
+                    <input class="rounded-full py-2 px-4 bg-gray-200 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="search" placeholder="Buscar...">
+                </form>
+                <button class="bg-white text-blue-500 font-semibold py-2 px-4 rounded-full border border-blue-500 hover:bg-blue-500 hover:text-white transition duration-300">Ingresar</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mx-auto my-4 px-4">
+
+        <!-- Título -->
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold text-gray-900">Estado de los sitios</h1>
+            <div class="flex items-center">
+                <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                <p class="text-gray-700">Sitios disponibles</p>
+                <div class="w-4 h-4 bg-red-500 rounded-full ml-4 mr-2"></div>
+                <p class="text-gray-700">Sitios no disponibles</p>
+            </div>
+        </div>
+
+        <!-- Sección de gráficos -->
+        <div class="-mx-2 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div class="p-4">
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Sitios arriba</h2>
+                    <div class="flex items-center">
+                      <span class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+                      <p class="text-sm font-medium text-gray-600">{{totalArriba}}</p>
+                    </div>
+                  </div>
+                </div>
+              
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div class="p-4">
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Sitios abajo</h2>
+                    <div class="flex items-center">
+                      <span class="h-3 w-3 rounded-full bg-red-500 mr-2"></span>
+                      <p class="text-sm font-medium text-gray-600">{{totalAbajo}}</p>
+                    </div>
+                  </div>
+                </div>
+              
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div class="p-4">
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Sitios con error</h2>
+                    <div class="flex items-center">
+                      <span class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>
+                      <p class="text-sm font-medium text-gray-600">{{totalError}}</p>
+                    </div>
+                  </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Listado de Sitios -->
+        <div class="-mx-2 mb-4">
+            <h1 class="text-3xl font-bold text-gray-900">Listado de Sitios</h1>
+            <div class="flex flex-col flex-wrap space-y-4">
+            <% estadoSitios.forEach((sitio) => { %>
+                <div class="p-4 rounded-lg shadow-md hover:bg-gray-100 transition-all duration-200 ease-in-out">
+                <div class="flex items-center justify-between">
+                    <a href="<%= sitio.url %>" class="text-blue-500 hover:text-blue-700"><%= sitio.nombre %></a>
+                    <div class="text-sm font-medium">
+                    <%= sitio.tiempoRespuesta %>
+                    </div>
+                </div>
+                <div class="mt-2 text-gray-600">
+                    <% if (sitio.estado === 'Disponible') { %>
+                    <span class="text-green-500 font-medium">Disponible</span>
+                    <% } else { %>
+                    <span class="text-red-500 font-medium cursor-pointer hover:text-red-700">
+                        Error (<%= sitio.estado %>)
+                    </span>
+                    <% } %>
+                </div>
+                <div class="mt-2 flex items-center text-sm text-gray-600">
+                    <div class="mr-4">
+                    Código de estado: <%= sitio.statusText %>
+                    </div>
+                    <div>
+                    Servidor: <%= sitio.server %>
+                    </div>
+                </div>
+                </div>
+            <% }) %>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 text-white p-4 text-center">&copy; 2023 Todos los derechos reservados</footer>
+</body>
+</html>
