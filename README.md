@@ -49,7 +49,7 @@ Es el punto de entrada del servidor.
 - expone `public/` como carpeta estatica
 - importa `obtenerEstadoDeSitios` desde `sitios.js`
 - define una sola ruta `GET /`
-- escucha en el puerto fijo `3000`
+- escucha en `process.env.PORT` o usa `3000` por defecto
 
 En terminos de arquitectura, este archivo hace a la vez de bootstrap del servidor y de controlador HTTP principal.
 
@@ -128,11 +128,11 @@ Dependencias declaradas pero usadas solo en el frontend via CDN o no integradas 
 - `chart.js`: el grafico se carga desde CDN, no desde el paquete instalado
 - `tailwindcss`: instalado, pero no compilado ni referenciado como asset local
 
-Observacion importante: no existe script `start`; solo hay un script `test` placeholder que falla.
+Observacion importante: el proyecto incluye `npm start` para arranque normal y `npm run dev` para desarrollo.
 
 ## Flujo de ejecucion
 
-1. Se inicia el servidor ejecutando `node app.js`.
+1. Se inicia el servidor ejecutando `npm start` o `node app.js`.
 2. Un usuario entra a `http://localhost:3000/`.
 3. La ruta `GET /` llama a `obtenerEstadoDeSitios()`.
 4. `sitios.js` consulta en paralelo cada URL configurada.
@@ -182,6 +182,45 @@ Los sitios activos hoy son:
 
 En `sitios.js` hay varios sitios adicionales comentados, lo que muestra que la lista se mantiene manualmente en codigo.
 
+## Donde agregar nuevos sitios
+
+Los nuevos sitios que quieras trackear se agregan en el arreglo `sitios` del archivo `sitios.js`.
+
+Archivo a editar:
+
+- `sitios.js`
+
+Bloque actual:
+
+```js
+const sitios = [
+  { nombre: 'UNIACC', url: 'https://repositoriobiblioteca.uniacc.cl/' },
+  { nombre: 'Banco Central', url: 'https://repositoriodigital.bcentral.cl/' }
+];
+```
+
+Ejemplo agregando un nuevo sitio:
+
+```js
+const sitios = [
+  { nombre: 'UNIACC', url: 'https://repositoriobiblioteca.uniacc.cl/' },
+  { nombre: 'Banco Central', url: 'https://repositoriodigital.bcentral.cl/' },
+  { nombre: 'Nuevo Sitio', url: 'https://ejemplo.cl/' }
+];
+```
+
+Que debes respetar:
+
+- `nombre` es el texto que se mostrara en el dashboard.
+- `url` debe ser la URL completa del sitio.
+- cada entrada debe ir separada por comas.
+- si agregas o cambias sitios, reinicia la app si la levantaste con `npm start`.
+
+Notas utiles:
+
+- el monitoreo ocurre cada vez que alguien entra a `/`.
+- si un sitio falla por certificado, timeout o caida, aparecera como `NOK`.
+
 ### Headers aprovechados
 
 Cuando una consulta resulta exitosa, la app intenta mostrar:
@@ -216,10 +255,9 @@ Eso desactiva la validacion estricta de certificados TLS. Es una decision pragma
 
 ### Configuracion hardcodeada
 
-- puerto fijo `3000`
 - lista de sitios fija en `sitios.js`
-- sin variables de entorno
-- sin configuracion por entorno
+- puerto configurable via `PORT`, con default `3000`
+- sin configuracion por entorno mas alla del puerto
 
 ## Limitaciones actuales
 
@@ -245,16 +283,36 @@ Eso desactiva la validacion estricta de certificados TLS. Es una decision pragma
 
 ## Como ejecutar el proyecto
 
+Version recomendada de Node:
+
+```bash
+nvm use
+```
+
+Si no usas `nvm`, instala Node `20.x`.
+
 Instalar dependencias:
 
 ```bash
-npm install
+npm ci
 ```
 
 Levantar el servidor:
 
 ```bash
-node app.js
+npm start
+```
+
+Modo desarrollo con recarga por cambios:
+
+```bash
+npm run dev
+```
+
+Puerto opcional:
+
+```bash
+PORT=3001 npm start
 ```
 
 Luego abrir:

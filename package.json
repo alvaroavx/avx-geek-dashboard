@@ -4,7 +4,13 @@
   "description": "Panel de control de proyectos de OpenGeek para AVX",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "9.x"
   },
   "repository": {
     "type": "git",
