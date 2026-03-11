@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node --watch app.js",
+    "build:css": "tailwindcss -i ./public/css/styles.css -o ./public/css/tailwind.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {

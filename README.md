@@ -1,4 +1,4 @@
-# AVX Geek Dashboard
+# AVX Status Dashboard
 
 Aplicacion web Node.js/Express para monitorear la disponibilidad de un conjunto acotado de sitios web y mostrar su estado en un dashboard renderizado en servidor.
 
@@ -323,4 +323,4 @@ http://localhost:3000/
 
 ## Resumen ejecutivo
 
-AVX Geek Dashboard es un monitor web muy simple, orientado a mostrar disponibilidad de sitios mediante renderizado server-side. La arquitectura actual es pequena y directa: Express como servidor, `sitios.js` como capa de consulta/datos, y `home.ejs` como unica interfaz. No hay controladores o modelos separados; esas responsabilidades estan resueltas con funciones y estructuras en memoria.
+AVX Status Dashboard es un monitor web muy simple, orientado a mostrar disponibilidad de sitios mediante renderizado server-side. La arquitectura actual es pequena y directa: Express como servidor, `sitios.js` como capa de consulta/datos, y `home.ejs` como unica interfaz. No hay controladores o modelos separados; esas responsabilidades estan resueltas con funciones y estructuras en memoria.

@@ -3,99 +3,427 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.7/tailwind.min.css">
+    <title>AVX Status Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/tailwind.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100">
-
-    <!-- Barra superior -->
-    <nav class="bg-blue-500 py-2">
-        <div class="container mx-auto flex justify-between items-center px-4">
-            <div class="text-xl font-bold text-white">Dashboard</div>
-            <div class="flex items-center">
-                <form class="mr-4">
-                    <input class="rounded-full py-2 px-4 bg-gray-200 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="search" placeholder="Buscar...">
-                </form>
-                <button class="bg-white text-blue-500 font-semibold py-2 px-4 rounded-full border border-blue-500 hover:bg-blue-500 hover:text-white transition duration-300">Ingresar</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Contenido principal -->
-    <div class="container mx-auto my-4 px-4">
-
-        <!-- Título -->
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-3xl font-bold text-gray-900">Estado de los sitios</h1>
-            <div class="flex items-center">
-                <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
-                <p class="text-gray-700">Sitios disponibles</p>
-                <div class="w-4 h-4 bg-red-500 rounded-full ml-4 mr-2"></div>
-                <p class="text-gray-700">Sitios no disponibles</p>
-            </div>
-        </div>
-
-        <!-- Sección de gráficos -->
-        <div class="-mx-2 mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-12">
-
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div class="p-4">
-                    <div class="flex items-center">
-                      <canvas id="chart"></canvas>
-                      <script>
-                        var ctx = document.getElementById('chart').getContext('2d');
-                        var chart = new Chart(ctx, {
-                          type: 'pie',
-                          data: {
-                            labels: ['Disponible', 'Abajo'],
-                            datasets: [{
-                              backgroundColor: ['#4CAF50', '#F44336'],
-                              data: [<%= estadoSitios.filter(site => site.estado === 'OK').length %>, <%= estadoSitios.filter(site => site.estado === 'NOK').length %>]
-                            }]
-                          },
-                          options: {
-                            responsive: true,
-                            maintainAspectRatio: false
-                          }
-                        });
-                      </script>
+<body class="min-h-screen bg-slate-950 text-slate-100" style="font-family: 'Space Grotesk', sans-serif;">
+    <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950">
+        <nav class="border-b border-slate-700 bg-slate-950/80 backdrop-blur-lg">
+            <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-7">
+                <div class="flex items-center gap-4">
+                    <img src="/images/avx.png" alt="AVX" class="max-w-[120px] w-auto py-[10px] object-contain">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-cyan-300">AVX Status Dashboard</p>
+                        <h1 class="text-2xl font-bold text-white">Monitoreo de sitios administrados</h1>
                     </div>
-                  </div>
                 </div>
-
+                <div class="text-right">
+                    <p class="text-xs uppercase tracking-widest text-slate-400">Última revisión</p>
+                    <p class="text-sm text-slate-100">
+                        <%= new Date(resumen.ultimaRevision).toLocaleString('es-CL', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                        }) %>
+                    </p>
+                </div>
             </div>
-        </div>
+        </nav>
 
-        <!-- Listado de Sitios -->
-        <div class="-mx-2 mb-4">
-            <h1 class="text-3xl font-bold text-gray-900">Listado de Sitios</h1>
-            <div class="flex flex-col flex-wrap space-y-4">
-            <% estadoSitios.forEach((sitio) => { %>
-                <div class="p-4 rounded-lg shadow-md hover:bg-gray-100 transition-all duration-200 ease-in-out">
-                <div class="flex items-center justify-between">
-                    <a href="<%= sitio.url %>" class="text-blue-500 hover:text-blue-700"><%= sitio.nombre %></a>
-                    <div class="text-sm font-medium"><%= sitio.tiempoRespuesta %></div>
+        <main class="mx-auto max-w-7xl px-6 py-8">
+            <section class="mb-8 grid gap-4 xl:grid-cols-[20%_40%_40%] xl:grid-rows-[12rem_12rem]">
+                <div class="rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+                    <p class="text-sm uppercase tracking-widest text-slate-400">Sitios monitoreados</p>
+                    <p id="summaryTotal" class="mt-3 text-4xl font-bold text-white"><%= resumen.total %></p>
+                    <p class="mt-2 text-sm text-slate-300">Todos los dominios activos del dashboard.</p>
                 </div>
-                <div class="mt-2 text-gray-600">
-                    <% if (sitio.estado === 'OK') { %>
-                    <span class="text-green-500 font-medium">Disponible (<%= sitio.statusText %>)</span>
-                      <% } else { %>
-                    <span class="text-red-500 font-medium cursor-pointer hover:text-red-700">
-                      <%= sitio.statusText %>
-                    </span>
-                    <% } %>
+                <div class="rounded-3xl border border-emerald-700 bg-emerald-950 p-6 shadow-2xl xl:col-start-1 xl:row-start-2">
+                    <p class="text-sm uppercase tracking-widest text-emerald-200">Disponibilidad</p>
+                    <p id="summaryAvailabilityPct" class="mt-3 text-4xl font-bold text-white"><%= resumen.disponibilidadPct %>%</p>
+                    <p id="summaryAvailabilityText" class="mt-2 text-sm text-emerald-100"><%= resumen.ok %> arriba, <%= resumen.nok %> abajo.</p>
                 </div>
-                <div class="mt-2 flex items-center text-sm text-gray-600">
-                    <div><%= sitio.server %></div>
+                <div class="rounded-3xl border border-slate-700 bg-slate-900 p-6 xl:col-start-2 xl:row-span-2">
+                    <div class="mb-4">
+                        <p class="text-sm uppercase tracking-widest text-slate-400">Estado general</p>
+                        <h2 class="text-2xl font-bold text-white">Distribución de disponibilidad</h2>
+                    </div>
+                    <div class="h-72 xl:h-[17rem]">
+                        <canvas id="availabilityChart"></canvas>
+                    </div>
                 </div>
+                <div class="rounded-3xl border border-slate-700 bg-slate-900 p-6 xl:col-start-3 xl:row-span-2">
+                    <div class="mb-4 flex flex-col justify-between gap-2 md:flex-row md:items-end">
+                        <div>
+                            <p class="text-sm uppercase tracking-widest text-slate-400">Rendimiento</p>
+                            <h2 class="text-2xl font-bold text-white">Tiempo de respuesta por sitio</h2>
+                        </div>
+                        <p class="text-sm text-slate-300">
+                            Sitio más lento:
+                            <span id="summarySlowest" class="font-semibold text-white">
+                                <%= resumen.sitioMasLento ? `${resumen.sitioMasLento.nombre} (${resumen.sitioMasLento.tiempoRespuesta})` : 'N/D' %>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="h-72 xl:h-[17rem]">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
                 </div>
-            <% }) %>
+            </section>
+
+            <section class="mb-4 flex items-center justify-between">
+                <div>
+                    <p class="text-sm uppercase tracking-widest text-slate-400">Detalle operativo</p>
+                    <h2 class="text-3xl font-bold text-white">Listado de sitios</h2>
+                </div>
+            </section>
+
+            <section class="mb-6 rounded-3xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+                <div class="grid gap-4 lg:grid-cols-4">
+                    <div class="lg:col-span-2">
+                        <label for="searchSites" class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-400">Buscar por nombre</label>
+                        <input id="searchSites" type="search" placeholder="Ej: AVX, WMD..." class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400">
+                    </div>
+                    <div>
+                        <label for="statusFilter" class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-400">Filtrar por estado</label>
+                        <select id="statusFilter" class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400">
+                            <option value="all">Todos</option>
+                            <option value="OK">Disponible</option>
+                            <option value="NOK">No disponible</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="sortSites" class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-400">Ordenar por</label>
+                        <select id="sortSites" class="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400">
+                            <option value="nombre-asc">Nombre A-Z</option>
+                            <option value="nombre-desc">Nombre Z-A</option>
+                            <option value="url-asc">URL A-Z</option>
+                            <option value="url-desc">URL Z-A</option>
+                            <option value="estado-asc">Estado OK primero</option>
+                            <option value="estado-desc">Estado NOK primero</option>
+                            <option value="checkedAt-desc">Chequeado más reciente</option>
+                            <option value="checkedAt-asc">Chequeado más antiguo</option>
+                            <option value="tiempoRespuestaMs-asc">Respuesta más rápida</option>
+                            <option value="tiempoRespuestaMs-desc">Respuesta más lenta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-col gap-2 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+                    <p id="siteResultsCount"><%= estadoSitios.length %> sitio(s) visibles</p>
+                    <button id="resetFilters" type="button" class="rounded-2xl border border-slate-700 bg-slate-800 px-4 py-2 text-slate-100 transition hover:border-cyan-400 hover:text-cyan-200">
+                        Limpiar filtros
+                    </button>
+                </div>
+            </section>
+
+            <section id="sitesList" class="grid gap-5">
+                <% estadoSitios.forEach((sitio) => { %>
+                    <article
+                        class="site-card rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl"
+                        data-nombre="<%= sitio.nombre.toLowerCase() %>"
+                        data-url="<%= sitio.url.toLowerCase() %>"
+                        data-estado="<%= sitio.estado %>"
+                        data-checked-at="<%= sitio.checkedAt %>"
+                        data-tiempo-respuesta-ms="<%= sitio.tiempoRespuestaMs === null ? '' : sitio.tiempoRespuestaMs %>"
+                    >
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div class="max-w-3xl">
+                                <div class="mb-3 flex flex-wrap items-center gap-3">
+                                    <span class="site-status-badge inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest <%= sitio.estado === 'OK' ? 'bg-emerald-900 text-emerald-100' : 'bg-red-900 text-red-100' %>">
+                                        <%= sitio.estado === 'OK' ? `Disponible (${sitio.statusText})` : `Incidencia (${sitio.statusText})` %>
+                                    </span>
+                                    <span class="site-category inline-flex rounded-full bg-cyan-950 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-cyan-100">
+                                        <%= sitio.categoria %>
+                                    </span>
+                                    <span class="site-protocol inline-flex rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-100">
+                                        <%= sitio.protocolo %>
+                                    </span>
+                                </div>
+
+                                <h3 class="site-title text-3xl font-bold text-white">
+                                    <%= sitio.titulo %>
+                                </h3>
+                                <a href="<%= sitio.url %>" target="_blank" rel="noreferrer" class="site-url mt-1 inline-block break-all text-sm text-cyan-200 transition hover:text-cyan-300">
+                                    <%= sitio.url %>
+                                </a>
+                                <p class="site-description mt-4 text-sm leading-6 text-slate-300"><%= sitio.descripcion %></p>
+                            </div>
+
+                            <div class="grid min-w-full gap-3 text-sm text-slate-200 md:grid-cols-2 xl:min-w-[24rem]">
+                                <div class="rounded-2xl bg-slate-800 p-4">
+                                    <p class="text-xs uppercase tracking-widest text-slate-400">Tiempo de respuesta</p>
+                                    <p class="site-response mt-2 text-xl font-bold text-white"><%= sitio.tiempoRespuesta %></p>
+                                </div>
+                                <div class="rounded-2xl bg-slate-800 p-4">
+                                    <p class="text-xs uppercase tracking-widest text-slate-400">Servidor</p>
+                                    <p class="site-server mt-2 text-base font-semibold text-white break-all"><%= sitio.server %></p>
+                                </div>
+                                <div class="rounded-2xl bg-slate-800 p-4">
+                                    <p class="text-xs uppercase tracking-widest text-slate-400">Host final</p>
+                                    <p class="site-host mt-2 text-base font-semibold text-white break-all"><%= sitio.host %></p>
+                                </div>
+                                <div class="rounded-2xl bg-slate-800 p-4">
+                                    <p class="text-xs uppercase tracking-widest text-slate-400">Chequeado</p>
+                                    <p class="site-checked-at mt-2 text-base font-semibold text-white"><%= sitio.checkedAt ? new Date(sitio.checkedAt).toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' }) : 'Pendiente' %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                <% }) %>
+            </section>
+
+            <div id="emptyState" class="hidden rounded-3xl border border-slate-700 bg-slate-900 p-10 text-center shadow-2xl">
+                <p class="text-sm uppercase tracking-widest text-slate-500">Sin resultados</p>
+                <h3 class="mt-3 text-2xl font-bold text-white">No hay sitios que coincidan con el filtro actual</h3>
+                <p class="mt-3 text-slate-300">Ajusta la búsqueda, el estado o el criterio de orden.</p>
             </div>
-        </div>
+        </main>
     </div>
 
-    <footer class="bg-gray-900 text-white p-4 text-center">&copy; 2023 Todos los derechos reservados</footer>
+    <script>
+        const estadoSitios = <%- JSON.stringify(estadoSitios) %>;
+        const estadoSitiosMap = new Map(estadoSitios.map((site) => [site.url, site]));
+
+        const formatCheckedAt = (value) => {
+            if (!value) {
+                return 'Pendiente';
+            }
+
+            return new Date(value).toLocaleString('es-CL', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+        };
+
+        const buildSummary = (sites) => {
+            const total = sites.length;
+            const okSites = sites.filter((site) => site.estado === 'OK');
+            const nokSites = sites.filter((site) => site.estado === 'NOK');
+            const timedSites = okSites.filter((site) => Number.isFinite(site.tiempoRespuestaMs));
+            const slowestSite = [...timedSites].sort((a, b) => b.tiempoRespuestaMs - a.tiempoRespuestaMs)[0] || null;
+
+            return {
+                total,
+                ok: okSites.length,
+                nok: nokSites.length,
+                disponibilidadPct: total ? Math.round((okSites.length / total) * 100) : 0,
+                sitioMasLento: slowestSite
+            };
+        };
+
+        const availabilityCtx = document.getElementById('availabilityChart').getContext('2d');
+        const availabilityChart = new Chart(availabilityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Disponible', 'No disponible'],
+                datasets: [{
+                    data: [
+                        estadoSitios.filter((site) => site.estado === 'OK').length,
+                        estadoSitios.filter((site) => site.estado === 'NOK').length
+                    ],
+                    backgroundColor: ['#34d399', '#f87171'],
+                    borderColor: ['#022c22', '#450a0a'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        });
+
+        const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+        const latencyChart = new Chart(latencyCtx, {
+            type: 'bar',
+            data: {
+                labels: estadoSitios.map((site) => site.nombre),
+                datasets: [{
+                    label: 'Tiempo de respuesta (ms)',
+                    data: estadoSitios.map((site) => site.tiempoRespuestaMs || 0),
+                    backgroundColor: estadoSitios.map((site) => site.estado === 'OK' ? '#22d3ee' : '#fb7185'),
+                    borderRadius: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#cbd5e1'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.15)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#cbd5e1'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.15)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e2e8f0'
+                        }
+                    }
+                }
+            }
+        });
+
+        const searchInput = document.getElementById('searchSites');
+        const statusFilter = document.getElementById('statusFilter');
+        const sortSites = document.getElementById('sortSites');
+        const resetFiltersButton = document.getElementById('resetFilters');
+        const sitesList = document.getElementById('sitesList');
+        const siteResultsCount = document.getElementById('siteResultsCount');
+        const emptyState = document.getElementById('emptyState');
+        const siteCards = Array.from(sitesList.querySelectorAll('.site-card'));
+        const summaryTotal = document.getElementById('summaryTotal');
+        const summaryAvailabilityPct = document.getElementById('summaryAvailabilityPct');
+        const summaryAvailabilityText = document.getElementById('summaryAvailabilityText');
+        const summarySlowest = document.getElementById('summarySlowest');
+
+        function updateSummaryAndCharts() {
+            const sites = Array.from(estadoSitiosMap.values());
+            const resumenActual = buildSummary(sites);
+
+            summaryTotal.textContent = resumenActual.total;
+            summaryAvailabilityPct.textContent = `${resumenActual.disponibilidadPct}%`;
+            summaryAvailabilityText.textContent = `${resumenActual.ok} arriba, ${resumenActual.nok} abajo.`;
+            summarySlowest.textContent = resumenActual.sitioMasLento
+                ? `${resumenActual.sitioMasLento.nombre} (${resumenActual.sitioMasLento.tiempoRespuesta})`
+                : 'N/D';
+
+            availabilityChart.data.datasets[0].data = [resumenActual.ok, resumenActual.nok];
+            availabilityChart.update();
+
+            latencyChart.data.labels = sites.map((site) => site.nombre);
+            latencyChart.data.datasets[0].data = sites.map((site) => site.tiempoRespuestaMs || 0);
+            latencyChart.data.datasets[0].backgroundColor = sites.map((site) => site.estado === 'OK' ? '#22d3ee' : '#fb7185');
+            latencyChart.update();
+        }
+
+        function updateSiteCard(site) {
+            const card = siteCards.find((item) => item.dataset.url === site.url.toLowerCase());
+
+            if (!card) {
+                return;
+            }
+
+            card.dataset.estado = site.estado;
+            card.dataset.checkedAt = site.checkedAt || '';
+            card.dataset.tiempoRespuestaMs = Number.isFinite(site.tiempoRespuestaMs) ? String(site.tiempoRespuestaMs) : '';
+
+            const statusBadge = card.querySelector('.site-status-badge');
+            statusBadge.className = `site-status-badge inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${
+                site.estado === 'OK' ? 'bg-emerald-900 text-emerald-100' : 'bg-red-900 text-red-100'
+            }`;
+            statusBadge.textContent = site.estado === 'OK'
+                ? `Disponible (${site.statusText})`
+                : `Incidencia (${site.statusText})`;
+
+            card.querySelector('.site-category').textContent = site.categoria;
+            card.querySelector('.site-protocol').textContent = site.protocolo;
+            card.querySelector('.site-title').textContent = site.titulo;
+            card.querySelector('.site-url').textContent = site.url;
+            card.querySelector('.site-url').href = site.url;
+            card.querySelector('.site-description').textContent = site.descripcion;
+            card.querySelector('.site-response').textContent = site.tiempoRespuesta;
+            card.querySelector('.site-server').textContent = site.server;
+            card.querySelector('.site-host').textContent = site.host;
+            card.querySelector('.site-checked-at').textContent = formatCheckedAt(site.checkedAt);
+        }
+
+        function compareCards(a, b, field, direction) {
+            const dir = direction === 'desc' ? -1 : 1;
+
+            if (field === 'tiempoRespuestaMs') {
+                const valueA = a.dataset.tiempoRespuestaMs ? Number(a.dataset.tiempoRespuestaMs) : Number.POSITIVE_INFINITY;
+                const valueB = b.dataset.tiempoRespuestaMs ? Number(b.dataset.tiempoRespuestaMs) : Number.POSITIVE_INFINITY;
+                return (valueA - valueB) * dir;
+            }
+
+            if (field === 'checkedAt') {
+                const valueA = new Date(a.dataset.checkedAt).getTime();
+                const valueB = new Date(b.dataset.checkedAt).getTime();
+                return (valueA - valueB) * dir;
+            }
+
+            if (field === 'estado') {
+                const order = { OK: 0, NOK: 1 };
+                const valueA = order[a.dataset.estado] ?? 99;
+                const valueB = order[b.dataset.estado] ?? 99;
+                return (valueA - valueB) * dir;
+            }
+
+            const key = field === 'nombre' ? 'nombre' : 'url';
+            return a.dataset[key].localeCompare(b.dataset[key], 'es', { sensitivity: 'base' }) * dir;
+        }
+
+        function renderSites() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const selectedStatus = statusFilter.value;
+            const [sortField, sortDirection] = sortSites.value.split('-');
+
+            const filteredCards = siteCards.filter((card) => {
+                const matchesSearch = card.dataset.nombre.includes(searchTerm);
+                const matchesStatus = selectedStatus === 'all' || card.dataset.estado === selectedStatus;
+                return matchesSearch && matchesStatus;
+            });
+
+            const sortedCards = [...filteredCards].sort((a, b) => compareCards(a, b, sortField, sortDirection));
+
+            siteCards.forEach((card) => card.classList.add('hidden'));
+            sortedCards.forEach((card) => {
+                card.classList.remove('hidden');
+                sitesList.appendChild(card);
+            });
+
+            const visibleCount = sortedCards.length;
+            siteResultsCount.textContent = `${visibleCount} sitio(s) visible(s)`;
+            emptyState.classList.toggle('hidden', visibleCount !== 0);
+            sitesList.classList.toggle('hidden', visibleCount === 0);
+        }
+
+        searchInput.addEventListener('input', renderSites);
+        statusFilter.addEventListener('change', renderSites);
+        sortSites.addEventListener('change', renderSites);
+        resetFiltersButton.addEventListener('click', () => {
+            searchInput.value = '';
+            statusFilter.value = 'all';
+            sortSites.value = 'nombre-asc';
+            renderSites();
+        });
+
+        const eventSource = new EventSource('/stream');
+        eventSource.addEventListener('site-update', (event) => {
+            const site = JSON.parse(event.data);
+            estadoSitiosMap.set(site.url, site);
+            updateSiteCard(site);
+            updateSummaryAndCharts();
+            renderSites();
+        });
+        eventSource.addEventListener('complete', () => {
+            eventSource.close();
+        });
+
+        updateSummaryAndCharts();
+        renderSites();
+    </script>
 </body>
 </html>
