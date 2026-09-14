@@ -2,6 +2,33 @@
 
 Aplicacion web Node.js/Express para monitorear la disponibilidad de un conjunto acotado de sitios web y mostrar su estado en un dashboard renderizado en servidor.
 
+## Guía humana
+
+### Qué es, para qué sirve y quiénes lo usan
+
+Este repositorio contiene un tablero interno/simple de estado para observar si una lista fija de sitios responde desde el servidor donde se ejecuta. Sirve para una comprobación visual rápida de disponibilidad y latencia, no para certificar SLA ni sustituir una plataforma profesional de monitoreo. Está pensado para operadores o equipos que mantienen los destinos configurados; no hay cuentas, permisos ni separación de audiencias.
+
+### Qué contiene y cómo trabaja
+
+Incluye un servidor Node.js con Express, una vista EJS, la lista de objetivos en `sitios.js`, un cliente Axios, estilos y visualización cargados por CDN. Al visitar `/`, el servidor consulta en paralelo los sitios configurados, mide el tiempo de respuesta, lee algunos encabezados y renderiza un resumen. No persiste resultados: cada carga del home vuelve a calcular el estado.
+
+### Funcionalidades y tareas que resuelve
+
+- Consultar por HTTP(S) una lista fija de sitios externos.
+- Informar estado OK/NOK, latencia, código/resultado y algunos headers disponibles.
+- Mostrar un resumen y gráfico de distribución en una sola pantalla.
+- Publicar eventos de actualización para el navegador mediante el flujo documentado de streaming.
+
+### Trazabilidad humana
+
+- **Solicitante:** no se encontró una solicitud, cliente ni persona solicitante verificable en los archivos versionados.
+- **Desarrollo:** el primer commit disponible fue creado por **Alvaro Vargas**. La historia disponible no permite atribuir cada decisión o aporte posterior a una persona concreta.
+- **Cuándo:** el primer registro Git disponible data del **5 de abril de 2023**; es la fecha conocida del repositorio, no una garantía del inicio del servicio.
+
+### Qué puede mejorar y oportunidades
+
+El tablero necesita límites operativos antes de usarse como monitor confiable: autenticación, control de los destinos, persistencia de historial, alertas, métricas y health checks independientes. También conviene revisar verificación TLS, timeouts, tratamiento de errores, exposición de headers y el pipeline real de Tailwind/CI. Las prioridades y límites están en [seguridad](docs/09-security.md), [deuda técnica](docs/17-technical-debt.md) y [riesgos](docs/18-risks.md).
+
 ## Que hace hoy
 
 La aplicacion expone una sola pagina en `/` que:
